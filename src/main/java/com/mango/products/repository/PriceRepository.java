@@ -21,7 +21,7 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
             SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
             FROM Price p
             WHERE p.product.id = :productId
-              AND p.initDate <= COALESCE(:endDate, :maxDate)
+              AND p.initDate <= COALESCE(CAST(:endDate AS date), :maxDate)
               AND COALESCE(p.endDate, :maxDate) >= :initDate
             """)
     boolean existsOverlapping(@Param("productId") Long productId,
