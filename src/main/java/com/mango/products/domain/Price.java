@@ -25,7 +25,7 @@ public class Price {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "value", nullable = false, precision = 12, scale = 2)
+    @Column(name = "\"value\"", nullable = false, precision = 12, scale = 2)
     private BigDecimal value;
 
     @Column(name = "init_date", nullable = false)
