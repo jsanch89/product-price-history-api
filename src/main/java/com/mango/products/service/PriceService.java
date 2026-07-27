@@ -32,4 +32,20 @@ public class PriceService {
 
         return priceRepository.save(new Price(product, value, initDate, endDate));
     }
+
+    public BigDecimal getCurrentValue(Long productId, LocalDate date) {
+        if (!productRepository.existsById(productId)) {
+            throw new ProductNotFoundException(productId);
+        }
+
+        return priceRepository.findCurrentValue(productId, date)
+                .orElseThrow(() -> new PriceNotFoundException(productId, date));
+    }
+
+    public ProductPriceHistory getHistory(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+
+        return new ProductPriceHistory(product, priceRepository.findByProductIdOrderByInitDateAsc(productId));
+    }
 }
