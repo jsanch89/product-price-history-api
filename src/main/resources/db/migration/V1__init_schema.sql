@@ -9,7 +9,10 @@ CREATE TABLE price (
     product_id  BIGINT NOT NULL REFERENCES product (id),
     "value"     DECIMAL(12, 2) NOT NULL,
     init_date   DATE NOT NULL,
-    end_date    DATE
+    end_date    DATE,
+    CONSTRAINT ck_price_value_non_negative CHECK ("value" >= 0),
+    CONSTRAINT ck_price_validity_range
+        CHECK (end_date IS NULL OR end_date >= init_date)
 );
 
 CREATE INDEX idx_price_product_init_end ON price (product_id, init_date, end_date);
