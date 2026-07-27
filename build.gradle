@@ -32,3 +32,9 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// Solo se necesita el jar ejecutable (bootJar); el jar "plano" del plugin
+// 'java' interfiere con el glob build/libs/*.jar usado por layertools en el Dockerfile.
+tasks.named('jar') {
+	enabled = false
+}
