@@ -16,4 +16,9 @@ public class ProductService {
     public Product create(String name, String description) {
         return productRepository.save(new Product(name, description));
     }
+
+    public Product get(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+    }
 }
