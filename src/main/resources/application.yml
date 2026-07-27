@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: products
+
+  datasource:
+    url: jdbc:h2:mem:products;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  # --- Rendimiento (T11) ---
+  threads:
+    # Virtual threads: cada request en su propio hilo virtual; con 1 CPU evita
+    # dimensionar el pool de Tomcat para cargas I/O-bound.
+    virtual:
+      enabled: true
+
+  main:
+    # Arranque: instanciar beans bajo demanda reduce el tiempo hasta "ready".
+    # El primer request paga la inicializacion; benchmark.sh ya hace requests de
+    # calentamiento (health + creacion de datos) antes de la seccion de carga.
+    lazy-initialization: true
+    banner-mode: off
+
+  jmx:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Actuator: solo health (lo consume benchmark.sh como espera activa).
+        include: health
