@@ -38,6 +38,12 @@ public class Price {
     }
 
     public Price(Product product, BigDecimal value, LocalDate initDate, LocalDate endDate) {
+        if (initDate == null) {
+            throw new IllegalArgumentException("initDate must not be null");
+        }
+        if (endDate != null && endDate.isBefore(initDate)) {
+            throw new IllegalArgumentException("endDate must not be before initDate");
+        }
         this.product = product;
         this.value = value;
         this.initDate = initDate;
