@@ -74,47 +74,21 @@ echo "Getting full price history..."
 curl -X GET "$BASE_URL/products/$PRODUCT_ID/prices"
 echo -e "\n"
 
-# Performance testing section
+# Performance testing section: carga mixta con k6 (80% GET vigente, 15% GET
+# historial, 5% POST producto) sobre el producto sembrado arriba, con
+# thresholds de latencia (p95/p99) y tasa de error.
 echo "===================="
-echo "PERFORMANCE TESTING"
+echo "PERFORMANCE TESTING (k6)"
 echo "===================="
 
-# Test concurrent product creation
-echo "Testing concurrent product creation..."
-START_TIME=$(date +%s.%N)
-for i in {1..1000}; do
-  curl -s -X POST "$BASE_URL/products" \
-    -H "Content-Type: application/json" \
-    -d '{"name":"Producto Test '"$i"'","description":"Descripción del producto '"$i"'"}' &
-done
-wait
-END_TIME=$(date +%s.%N)
-DURATION=$(echo "$END_TIME - $START_TIME" | bc)
-echo "1000 concurrent product creations took: $DURATION seconds"
+k6 run --env BASE_URL="$BASE_URL" --env PRODUCT_ID="$PRODUCT_ID" /app/k6/load-test.js
+K6_EXIT_CODE=$?
+
 echo -e "\n"
 
-# Test concurrent price queries
-echo "Testing concurrent price queries..."
-START_TIME=$(date +%s.%N)
-for i in {1..20000}; do
-  curl -s -X GET "$BASE_URL/products/$PRODUCT_ID/prices?date=2024-04-15" > /dev/null &
-done
-wait
-END_TIME=$(date +%s.%N)
-DURATION=$(echo "$END_TIME - $START_TIME" | bc)
-echo "20000 concurrent price queries took: $DURATION seconds"
-echo -e "\n"
-
-# Test concurrent price history requests
-echo "Testing concurrent price history requests..."
-START_TIME=$(date +%s.%N)
-for i in {1..15000}; do
-  curl -s -X GET "$BASE_URL/products/$PRODUCT_ID/prices" > /dev/null &
-done
-wait
-END_TIME=$(date +%s.%N)
-DURATION=$(echo "$END_TIME - $START_TIME" | bc)
-echo "15000 concurrent price history requests took: $DURATION seconds"
-echo -e "\n"
+if [ $K6_EXIT_CODE -ne 0 ]; then
+  echo "k6 reportó umbrales incumplidos o errores (exit code $K6_EXIT_CODE)"
+  exit $K6_EXIT_CODE
+fi
 
 echo "Benchmark completed successfully!"

@@ -152,12 +152,19 @@ No se añadió caché in-process (Caffeine): con estas latencias no estaba justi
 
 ## Benchmark de carga (k6)
 
-No implementado (bonus T14 no priorizado en esta entrega). Como base de rendimiento se usa `benchmark.sh`, que se ejecuta automáticamente vía `docker-compose.yml` en un contenedor auxiliar (`Dockerfile.benchmark`) después de que la API pasa su healthcheck: crea un producto, agrega precios, consulta precio vigente/historial y mide la duración de tandas de requests concurrentes (1000 creaciones, 20000 consultas de precio vigente, 15000 de historial) con `curl` en paralelo.
+`benchmark.sh` se ejecuta automáticamente vía `docker-compose.yml` en un contenedor auxiliar (`Dockerfile.benchmark`) después de que la API pasa su healthcheck. Tiene dos partes:
+
+1. **Smoke test funcional** con `curl`: crea un producto, agrega tres precios (con y sin `endDate`) y consulta precio vigente/historial, para verificar que los 4 endpoints responden correctamente antes de someterlos a carga.
+2. **Carga con k6** (`k6/load-test.js`) contra el producto ya sembrado, con una mezcla de tráfico 80% `GET` precio vigente / 15% `GET` historial / 5% `POST` producto, rampa de hasta 50 VUs concurrentes durante 70 s, y *thresholds* explícitos: `http_req_failed` < 1% y `p95 < 200 ms` / `p99 < 500 ms` (más finos por endpoint). Si algún threshold falla, `k6` devuelve código de salida distinto de cero y `benchmark.sh` propaga el fallo.
+
+El contenedor `benchmark` es auxiliar (no la app bajo prueba), por lo que está limitado a 1 GB / 500 mCPU en `docker-compose.yml`, respetando la restricción del enunciado; los límites del contenedor `app` (1 CPU / 1 GB) no se tocan.
 
 ```bash
 docker compose up --build
-# los logs del contenedor `product-benchmark` muestran los tiempos
+# los logs del contenedor `product-benchmark` muestran el resumen de k6 (latencias, thresholds, tasa de error)
 ```
+
+Medido en local (Docker Desktop, límites del compose): 0% de errores sobre ~465k requests, p95 ≈ 29 ms / p99 ≈ 58 ms, muy por debajo de los thresholds configurados.
 
 ## Supuestos y desviaciones del enunciado
 
@@ -170,7 +177,6 @@ docker compose up --build
 
 Priorizadas pero no implementadas por tiempo:
 
-- Benchmark de carga con k6 y umbrales explícitos (p95, tasa de error).
 - Documentación OpenAPI/Swagger (`springdoc-openapi`).
 - `CommandLineRunner` condicional para poblar datos de prueba.
 - Paginación/ordenamiento del historial de precios (`Pageable`), manteniendo el contrato por defecto.

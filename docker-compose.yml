@@ -30,10 +30,12 @@ services:
       app:
         condition: service_healthy
     command: sh -c "chmod +x /app/benchmark.sh && /app/benchmark.sh"
+    # Contenedor auxiliar (no la app bajo prueba): limitado a 1 GB / 500 mCPU
+    # por la restricción del benchmark de rendimiento.
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: '0.5'
           memory: 1G
         reservations:
           cpus: '0.25'

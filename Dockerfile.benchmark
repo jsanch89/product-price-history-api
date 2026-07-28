@@ -1,5 +1,12 @@
+# Imagen oficial multi-arch de k6: se copia solo el binario en vez de instalar
+# vía apt (el repo apt de k6 no publica paquetes para arm64).
+FROM grafana/k6:latest AS k6
+
 FROM ubuntu:22.04
 WORKDIR /app
 RUN apt-get update && \
-    apt-get install -y curl jq
+    apt-get install -y curl jq && \
+    rm -rf /var/lib/apt/lists/*
+COPY --from=k6 /usr/bin/k6 /usr/bin/k6
 COPY benchmark.sh benchmark.sh
+COPY k6/load-test.js k6/load-test.js
