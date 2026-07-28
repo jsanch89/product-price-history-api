@@ -69,6 +69,11 @@ curl "localhost:8080/products/1/prices?date=2024-04-15"
 curl localhost:8080/products/1/prices
 ```
 
+Documentación interactiva (OpenAPI/Swagger, `springdoc-openapi`) disponible con la app en ejecución:
+
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- Especificación OpenAPI: `http://localhost:8080/v3/api-docs`
+
 ## Decisiones técnicas y justificación
 
 | Decisión | Elección | Por qué |
@@ -177,7 +182,6 @@ Medido en local (Docker Desktop, límites del compose): 0% de errores sobre ~465
 
 Priorizadas pero no implementadas por tiempo:
 
-- Documentación OpenAPI/Swagger (`springdoc-openapi`).
 - `CommandLineRunner` condicional para poblar datos de prueba.
 - Paginación/ordenamiento del historial de precios (`Pageable`), manteniendo el contrato por defecto.
 - Caché Caffeine `(productId, date) → value` con invalidación al escribir, solo si un benchmark real lo justifica.
